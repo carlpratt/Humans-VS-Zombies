@@ -1,6 +1,10 @@
 package com.cs638.humans_vs_zombies;
 
 import android.app.Activity;
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -15,6 +19,9 @@ public class MyActivity extends Activity {
 
     // Google Map
     private GoogleMap googleMap;
+
+    private LocationManager mLocManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,23 +38,11 @@ public class MyActivity extends Activity {
 
         googleMap.setMyLocationEnabled(true); // false to disable
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        googleMap.getUiSettings().setCompassEnabled(true);
 
-        // latitude and longitude
-        double latitude = 43.0712263;
-        double longitude = -89.4142592;
+        mLocManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-        // create marker
-        MarkerOptions marker = new MarkerOptions().position(new LatLng(latitude, longitude)).title("Hello Maps ");
-        // GREEN color icon
-        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-        // adding marker
-        //googleMap.addMarker(marker);
-
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(
-                new LatLng(latitude, longitude)).zoom(18).build();
-
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocListener);
     }
 
     /**
@@ -72,5 +67,40 @@ public class MyActivity extends Activity {
         super.onResume();
         initilizeMap();
     }
+
+    private void moveToLocation(LatLng latlng, int zoomLevel /* Between 2 and 21 */, int animationDuration)
+    {
+        // Move the camera to the given location with a specific zoomlevel.
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoomLevel));
+
+        // Zoom in, animating the camera.
+        googleMap.animateCamera(CameraUpdateFactory.zoomTo(zoomLevel), animationDuration, null);
+    }
+
+    LocationListener mLocListener = new LocationListener()
+    {
+        public void onLocationChanged(Location location)
+        {
+            LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
+
+            //googleMap.addMarker(new MarkerOptions().position(myLocation).title("Here I am!"));
+
+            moveToLocation(myLocation, 19, 2000);
+
+            // Preventing repetitive calls to onLocationChanged.
+            mLocManager.removeUpdates(this);
+            mLocManager.removeUpdates(mLocListener);
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) { }
+
+        @Override
+        public void onProviderEnabled(String provider) { }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) { }
+
+    };
 
 }
