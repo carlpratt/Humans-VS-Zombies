@@ -10,17 +10,14 @@ import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.*;
 
 public class MyActivity extends Activity {
 
     // Google Map
     private GoogleMap googleMap;
 
-    private LocationManager mLocManager;
+    private LocationManager locationManager;
 
 
     @Override
@@ -40,9 +37,15 @@ public class MyActivity extends Activity {
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
         googleMap.getUiSettings().setCompassEnabled(true);
 
-        mLocManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        // Update camera to general madison area
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(
+                new LatLng(43.0711880,-89.4142350)).zoom(12).build();
 
-        mLocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, mLocListener);
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
 
     /**
@@ -68,28 +71,46 @@ public class MyActivity extends Activity {
         initilizeMap();
     }
 
-    private void moveToLocation(LatLng latlng, int zoomLevel /* Between 2 and 21 */, int animationDuration)
+    LocationListener locationListener = new LocationListener()
     {
-        // Move the camera to the given location with a specific zoomlevel.
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, zoomLevel));
+        double latitude;
+        double longitude;
+        boolean onAppStart = true;
+        int i = 0;
+        Marker marker;
 
-        // Zoom in, animating the camera.
-        googleMap.animateCamera(CameraUpdateFactory.zoomTo(zoomLevel), animationDuration, null);
-    }
-
-    LocationListener mLocListener = new LocationListener()
-    {
         public void onLocationChanged(Location location)
         {
             LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
-            //googleMap.addMarker(new MarkerOptions().position(myLocation).title("Here I am!"));
+            if (onAppStart){
 
-            moveToLocation(myLocation, 19, 2000);
+                onAppStart = false;
+                // Move the camera to the given location with a specific zoomLevel.
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, 19));
+
+                // Zoom in, animating the camera.
+                googleMap.animateCamera(CameraUpdateFactory.zoomTo(19), 2000, null);
+
+                marker = googleMap.addMarker(new MarkerOptions().position(myLocation));
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            }
+
+            marker.setPosition(myLocation);
+
+            i++;
+            if (i >= 5){ // Only show toast message every 5 calls to onLocationChanged
+                i = 0;
+                latitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude();
+                longitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude();
+
+                String coordinates = "Latitude: " + latitude + "\nLongitude: " + longitude;
+                Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_SHORT).show();
+            }
 
             // Preventing repetitive calls to onLocationChanged.
-            mLocManager.removeUpdates(this);
-            mLocManager.removeUpdates(mLocListener);
+            //locationManager.removeUpdates(this);
+            //locationManager.removeUpdates(locationListener);
         }
 
         @Override
@@ -102,5 +123,4 @@ public class MyActivity extends Activity {
         public void onStatusChanged(String provider, int status, Bundle extras) { }
 
     };
-
 }
