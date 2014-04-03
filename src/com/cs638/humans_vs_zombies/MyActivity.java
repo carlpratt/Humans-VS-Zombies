@@ -6,6 +6,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -17,8 +19,16 @@ public class MyActivity extends Activity {
     // Google Map
     private GoogleMap googleMap;
 
-    private LocationManager locationManager;
+    private LocationManager locationManager; // Updates player position on the map
 
+    private Marker marker; // Marker that follows the player
+
+    private Status playerStatus = Status.HUMAN; // Human or zombie status
+
+    public enum Status {
+        HUMAN,
+        ZOMBIE
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +37,7 @@ public class MyActivity extends Activity {
 
         try {
             // Loading map
-            initilizeMap();
+            initializeMap();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -48,10 +58,31 @@ public class MyActivity extends Activity {
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_change_status:
+                if (playerStatus == Status.HUMAN){
+                    playerStatus = Status.ZOMBIE;
+                } else {
+                    playerStatus = Status.HUMAN;
+                }
+                break;
+        }
+        return true;
+    }
+
     /**
      * function to load map. If map is not created it will create it for you
      * */
-    private void initilizeMap() {
+    private void initializeMap() {
         if (googleMap == null) {
             googleMap = ((MapFragment) getFragmentManager().findFragmentById(
                     R.id.map)).getMap();
@@ -68,7 +99,7 @@ public class MyActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        initilizeMap();
+        initializeMap();
     }
 
     LocationListener locationListener = new LocationListener()
@@ -77,7 +108,7 @@ public class MyActivity extends Activity {
         double longitude;
         boolean onAppStart = true;
         int i = 0;
-        Marker marker;
+        //Marker marker;
 
         public void onLocationChanged(Location location)
         {
@@ -93,9 +124,9 @@ public class MyActivity extends Activity {
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(19), 2000, null);
 
                 marker = googleMap.addMarker(new MarkerOptions().position(myLocation));
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
             }
 
+            updateMarkerColor();
             marker.setPosition(myLocation);
 
             i++;
@@ -104,8 +135,15 @@ public class MyActivity extends Activity {
                 latitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude();
                 longitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude();
 
-                String coordinates = "Latitude: " + latitude + "\nLongitude: " + longitude;
-                Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_SHORT).show();
+                Float accuracy = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getAccuracy();
+                Double altitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getAltitude();
+
+                String coordinates =
+                        "Latitude: " + latitude +
+                        "\nLongitude: " + longitude +
+                        "\nAccuracy: " + accuracy +
+                        "\nAltitude: " + altitude;
+                Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
             }
 
             // Preventing repetitive calls to onLocationChanged.
@@ -123,4 +161,12 @@ public class MyActivity extends Activity {
         public void onStatusChanged(String provider, int status, Bundle extras) { }
 
     };
+
+    private void updateMarkerColor(){
+        if (playerStatus == Status.HUMAN){
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        } else {
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        }
+    }
 }
