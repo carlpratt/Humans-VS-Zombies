@@ -25,13 +25,14 @@ public class MainActivity extends Activity {
 
     private LocationManager locationManager; // Updates player position on the map
 
-    private Marker marker; // Marker that follows the player
+    private Marker playerMarker; // Marker that follows the player
 
     private int id;
 
     private Status playerStatus = Status.HUMAN; // Human or zombie status
 
     private List<LatLng> coordinates = new ArrayList<LatLng>();
+    private List<Marker> otherPlayers = new ArrayList<Marker>();
 
     public enum Status {
         HUMAN,
@@ -120,7 +121,6 @@ public class MainActivity extends Activity {
         double longitude;
         boolean onAppStart = true;
         int i = 0;
-        //Marker marker;
 
         public void onLocationChanged(Location location)
         {
@@ -135,11 +135,11 @@ public class MainActivity extends Activity {
                 // Zoom in, animating the camera.
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(19), 2000, null);
 
-                marker = googleMap.addMarker(new MarkerOptions().position(myLocation));
+                playerMarker = googleMap.addMarker(new MarkerOptions().position(myLocation));
             }
 
             updateMarkerColor();
-            marker.setPosition(myLocation);
+            playerMarker.setPosition(myLocation);
 
             i++;
             if (i >= 5){ // Only show toast message and update backend every 5 calls to onLocationChanged
@@ -159,6 +159,10 @@ public class MainActivity extends Activity {
 
                 // Can uncomment once backend is working
                 updateGameData();
+
+                removeMarkers(); // Remove all other players markers before reset
+
+                placeMarkers(); // Update location of player markers
             }
 
             // Preventing repetitive calls to onLocationChanged.
@@ -179,9 +183,9 @@ public class MainActivity extends Activity {
 
     private void updateMarkerColor(){
         if (playerStatus == Status.HUMAN){
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         } else {
-            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         }
     }
 
@@ -198,5 +202,18 @@ public class MainActivity extends Activity {
      */
     private void updateGameData(){
         new UpdateGameData(this).execute();
+    }
+
+    private void placeMarkers(){
+
+        for (LatLng location : coordinates){
+            otherPlayers.add(googleMap.addMarker(new MarkerOptions().position(location)));
+        }
+    }
+
+    private void removeMarkers(){
+        for (Marker marker : otherPlayers){
+            marker.remove();
+        }
     }
 }
