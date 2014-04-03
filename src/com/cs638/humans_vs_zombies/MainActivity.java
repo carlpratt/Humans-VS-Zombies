@@ -16,6 +16,7 @@ import com.google.android.gms.maps.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MainActivity extends Activity {
 
@@ -25,6 +26,8 @@ public class MainActivity extends Activity {
     private LocationManager locationManager; // Updates player position on the map
 
     private Marker marker; // Marker that follows the player
+
+    private int id;
 
     private Status playerStatus = Status.HUMAN; // Human or zombie status
 
@@ -47,6 +50,10 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        Random random = new Random();
+        id = random.nextInt(2147483647); //0 through max int
+
 
         googleMap.setMyLocationEnabled(true); // false to disable
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
