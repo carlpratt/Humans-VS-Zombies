@@ -2,6 +2,7 @@ package com.cs638.humans_vs_zombies;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -214,6 +215,36 @@ public class MainActivity extends Activity {
     private void removeMarkers(){
         for (Marker marker : otherPlayers){
             marker.remove();
+        }
+    }
+
+    private void checkProximity(){
+
+        double playerLatitude = playerMarker.getPosition().latitude;
+        double playerLongitude = playerMarker.getPosition().longitude;
+
+        double otherPlayerLatitude;
+        double otherPlayerLongitude;
+
+        float[] results = new float[3]; //May contain up to 3 elements if bearings are included
+
+        for (LatLng otherPlayer : coordinates) {
+
+            otherPlayerLatitude = otherPlayer.latitude;
+            otherPlayerLongitude = otherPlayer.longitude;
+
+            // I don't know why they decided to write the method like this...
+            Location.distanceBetween(playerLatitude, playerLongitude,
+                    otherPlayerLatitude, otherPlayerLongitude, results);
+
+            // If zombie is close enough (less than 5 meters) to player, start attack.
+            //  Will need to edit this to include accuracy and current player status (human or zombie)
+            if (results[0] <= 5){
+                Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
+                startActivity(intent);
+            }
+
+
         }
     }
 }
