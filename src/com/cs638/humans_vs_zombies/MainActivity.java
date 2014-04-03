@@ -14,7 +14,10 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.*;
 
-public class MyActivity extends Activity {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends Activity {
 
     // Google Map
     private GoogleMap googleMap;
@@ -24,6 +27,8 @@ public class MyActivity extends Activity {
     private Marker marker; // Marker that follows the player
 
     private Status playerStatus = Status.HUMAN; // Human or zombie status
+
+    private List<LatLng> coordinates = new ArrayList<LatLng>();
 
     public enum Status {
         HUMAN,
@@ -130,7 +135,7 @@ public class MyActivity extends Activity {
             marker.setPosition(myLocation);
 
             i++;
-            if (i >= 5){ // Only show toast message every 5 calls to onLocationChanged
+            if (i >= 5){ // Only show toast message and update backend every 5 calls to onLocationChanged
                 i = 0;
                 latitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude();
                 longitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude();
@@ -144,6 +149,9 @@ public class MyActivity extends Activity {
                         "\nAccuracy: " + accuracy +
                         "\nAltitude: " + altitude;
                 Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
+
+                // Can uncomment once backend is working
+                updateGameData();
             }
 
             // Preventing repetitive calls to onLocationChanged.
@@ -168,5 +176,20 @@ public class MyActivity extends Activity {
         } else {
             marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         }
+    }
+
+    /**
+     * Method to be called by the UpdateGameData class for updating other players coordinates
+     * @param coordinates
+     */
+    public void setCoordinates(List<LatLng> coordinates){
+        this.coordinates = coordinates;
+    }
+
+    /**
+     * Grabs new data about other players from the backend
+     */
+    private void updateGameData(){
+        new UpdateGameData(this).execute();
     }
 }
