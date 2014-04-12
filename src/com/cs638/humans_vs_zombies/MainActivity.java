@@ -31,7 +31,7 @@ public class MainActivity extends Activity {
     private List<Player> otherPlayers = new ArrayList<Player>();
     private List<Marker> otherPlayerMarkers = new ArrayList<Marker>();
     
-    private String locationServiceProvider = LocationManager.NETWORK_PROVIDER; // Location service provider (gps or network)
+    private String locationServiceProvider = LocationManager.GPS_PROVIDER; // Location service provider (gps or network)
     private int updatePeriod = 1; // How often user receives location updates
 
     public enum Status {

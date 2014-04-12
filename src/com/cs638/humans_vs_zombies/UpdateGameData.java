@@ -58,9 +58,6 @@ public class UpdateGameData extends AsyncTask<String, String, String> {
      */
     protected String doInBackground(String... args) {
 
-        // Building Parameters
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-
         url_update += player.getId() + ":" +
                 zombie + ":" +
                 player.getCoordinates().latitude + ":" +
