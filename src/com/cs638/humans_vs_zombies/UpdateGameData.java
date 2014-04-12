@@ -16,9 +16,8 @@ import java.util.List;
  * The primary function of this class is to push up the current player's status and coordinates, and
  * to pull in the status and coordinates of all other players so MainActivity can update the map.
  */
-public class UpdateGameData extends AsyncTask<String, String, String> {
+public class UpdateGameData extends AsyncTask<Player, String, String> {
 
-    private static String url_update = "http://cryptic-spire-5519.herokuapp.com/send/";
 
     private List<Player> players = new ArrayList<Player>(); // Pulled data will be parsed into this list
 
@@ -56,12 +55,16 @@ public class UpdateGameData extends AsyncTask<String, String, String> {
     /**
      * Performing query to database
      */
-    protected String doInBackground(String... args) {
+    protected String doInBackground(Player... args) {
+
+        String url_update = "http://cryptic-spire-5519.herokuapp.com/send/";
+
+        Player playerArgs = args[0];
 
         url_update += player.getId() + ":" +
                 zombie + ":" +
-                player.getCoordinates().latitude + ":" +
-                player.getCoordinates().longitude;
+                playerArgs.getCoordinates().latitude + ":" +
+                playerArgs.getCoordinates().longitude;
 
         // getting JSON Object
         JSONObject json = jsonParser.makeHttpRequest(url_update,  "GET");
@@ -77,15 +80,15 @@ public class UpdateGameData extends AsyncTask<String, String, String> {
                 JSONObject player = jsonPlayers.getJSONObject(i);
 
                 int playerId = player.getInt("userID");
-                boolean playerStatus = player.getBoolean("zombie");
+                boolean playerZombieStatus = player.getBoolean("zombie");
                 double lat = player.getDouble("lat");
                 double lon = player.getDouble("lon");
 
                 LatLng playerCoordinates = new LatLng(lat, lon);
                 Player p;
-                if (playerStatus == true) {
+                if (playerZombieStatus == true) {
                     p = new Player(playerId, MainActivity.Status.ZOMBIE, playerCoordinates);
-                } else if (playerStatus == false){
+                } else if (playerZombieStatus == false){
                     p = new Player(playerId, MainActivity.Status.HUMAN, playerCoordinates);
                 } else {
                     p = new Player(MainActivity.Status.HUMAN); // Shouldn't ever get here...

@@ -32,7 +32,7 @@ public class MainActivity extends Activity {
     private List<Marker> otherPlayerMarkers = new ArrayList<Marker>();
     
     private String locationServiceProvider = LocationManager.GPS_PROVIDER; // Location service provider (gps or network)
-    private int updatePeriod = 1; // How often user receives location updates
+    private int updatePeriod = 5; // How often user receives location updates
 
     public enum Status {
         HUMAN,
@@ -213,7 +213,7 @@ public class MainActivity extends Activity {
      * Needs to live outside of the location listener to pass along MainActivity
      */
     private void updateGameData(){
-        new UpdateGameData(player, this).execute();
+        new UpdateGameData(player, this).execute(player);
     }
 
 
