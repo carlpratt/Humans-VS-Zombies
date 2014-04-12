@@ -29,8 +29,7 @@ public class JSONParser {
 
     // function get json from url
     // by making HTTP POST or GET method
-    public JSONObject makeHttpRequest(String url, String method,
-                                      List<NameValuePair> params) {
+    public JSONObject makeHttpRequest(String url, String method) {
 
         // Making HTTP request
         try {
@@ -40,7 +39,8 @@ public class JSONParser {
                 // request method is POST
                 DefaultHttpClient httpClient = new DefaultHttpClient();
                 HttpPost httpPost = new HttpPost(url);
-                httpPost.setEntity(new UrlEncodedFormEntity(params));
+                // Don't need this line because not actually using params
+                //httpPost.setEntity(new UrlEncodedFormEntity(params));
 
                 HttpResponse httpResponse = httpClient.execute(httpPost);
                 HttpEntity httpEntity = httpResponse.getEntity();
@@ -49,8 +49,8 @@ public class JSONParser {
             } else if (method == "GET") {
                 // request method is GET
                 DefaultHttpClient httpClient = new DefaultHttpClient();
-                String paramString = URLEncodedUtils.format(params, "utf-8");
-                url += "?" + paramString;
+                //String paramString = URLEncodedUtils.format(params, "utf-8");
+                //url += "?" + paramString;
                 HttpGet httpGet = new HttpGet(url);
 
                 HttpResponse httpResponse = httpClient.execute(httpGet);

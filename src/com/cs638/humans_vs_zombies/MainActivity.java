@@ -17,9 +17,10 @@ import com.google.android.gms.maps.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class MainActivity extends Activity {
+
+    private Player player; // Current player
 
     // Google Map
     private GoogleMap googleMap;
@@ -28,12 +29,8 @@ public class MainActivity extends Activity {
 
     private Marker playerMarker; // Marker that follows the player
 
-    private int id;
-
-    private Status playerStatus = Status.HUMAN; // Human or zombie status
-
-    private List<LatLng> coordinates = new ArrayList<LatLng>();
-    private List<Marker> otherPlayers = new ArrayList<Marker>();
+    private List<Player> otherPlayers = new ArrayList<Player>();
+    private List<Marker> otherPlayerMarkers = new ArrayList<Marker>();
 
     public enum Status {
         HUMAN,
@@ -53,10 +50,6 @@ public class MainActivity extends Activity {
             e.printStackTrace();
         }
 
-        Random random = new Random();
-        id = random.nextInt(2147483647); //0 through max int
-
-
         googleMap.setMyLocationEnabled(true); // false to disable
         googleMap.getUiSettings().setMyLocationButtonEnabled(true);
         googleMap.getUiSettings().setCompassEnabled(true);
@@ -70,6 +63,10 @@ public class MainActivity extends Activity {
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+
+        // Create the new player
+        //  In the future, we can store this on an on-device SQLite database
+        player = new Player(Status.HUMAN); // New player is human
     }
 
     @Override
@@ -83,10 +80,10 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
 
             case R.id.action_change_status:
-                if (playerStatus == Status.HUMAN){
-                    playerStatus = Status.ZOMBIE;
+                if (player.getStatus() == Status.HUMAN){
+                    player.setStatus(Status.ZOMBIE);
                 } else {
-                    playerStatus = Status.HUMAN;
+                    player.setStatus(Status.HUMAN);
                 }
                 break;
         }
@@ -94,7 +91,7 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * function to load map. If map is not created it will create it for you
+     * Function to load map. If map is not created it will create it for you
      * */
     private void initializeMap() {
         if (googleMap == null) {
@@ -142,6 +139,8 @@ public class MainActivity extends Activity {
             updateMarkerColor();
             playerMarker.setPosition(myLocation);
 
+            player.setCoordinates(myLocation);
+
             i++;
             if (i >= 5){ // Only show toast message and update backend every 5 calls to onLocationChanged
                 i = 0;
@@ -159,7 +158,7 @@ public class MainActivity extends Activity {
                 Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
 
                 // Can uncomment once backend is working
-                updateGameData();
+                //updateGameData();
 
                 removeMarkers(); // Remove all other players markers before reset
 
@@ -182,8 +181,11 @@ public class MainActivity extends Activity {
 
     };
 
+    /**
+     * Update marker colors based on player status.
+     */
     private void updateMarkerColor(){
-        if (playerStatus == Status.HUMAN){
+        if (player.getStatus() == Status.HUMAN){
             playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         } else {
             playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
@@ -191,33 +193,45 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Method to be called by the UpdateGameData class for updating other players coordinates
-     * @param coordinates
+     * Updates game data with positions of other players.
+     * Needs to live outside of the location listener to pass along MainActivity
      */
-    public void setCoordinates(List<LatLng> coordinates){
-        this.coordinates = coordinates;
+    private void updateGameData(){
+        new UpdateGameData(player, this).execute();
+    }
+
+
+    /**
+     * Method to be called by the UpdateGameData class for updating other players information
+     * @param otherPlayers
+     */
+    public void updateOtherPlayers(List<Player> otherPlayers){
+
+        this.otherPlayers = otherPlayers;
     }
 
     /**
-     * Grabs new data about other players from the backend
+     * Places new markers on the map
      */
-    private void updateGameData(){
-        new UpdateGameData(this).execute();
-    }
-
     private void placeMarkers(){
 
-        for (LatLng location : coordinates){
-            otherPlayers.add(googleMap.addMarker(new MarkerOptions().position(location)));
+        for (Player player : otherPlayers){
+            otherPlayerMarkers.add(googleMap.addMarker(new MarkerOptions().position(player.getCoordinates())));
         }
     }
 
+    /**
+     * Removes all markers so they can be redrawn
+     */
     private void removeMarkers(){
-        for (Marker marker : otherPlayers){
+        for (Marker marker : otherPlayerMarkers){
             marker.remove();
         }
     }
 
+    /**
+     * Checks for nearby players and determines if a ZombieAttackActivity needs to happen
+     */
     private void checkProximity(){
 
         double playerLatitude = playerMarker.getPosition().latitude;
@@ -228,10 +242,10 @@ public class MainActivity extends Activity {
 
         float[] results = new float[3]; //May contain up to 3 elements if bearings are included
 
-        for (LatLng otherPlayer : coordinates) {
+        for (Player otherPlayer : otherPlayers) {
 
-            otherPlayerLatitude = otherPlayer.latitude;
-            otherPlayerLongitude = otherPlayer.longitude;
+            otherPlayerLatitude = otherPlayer.getCoordinates().latitude;
+            otherPlayerLongitude = otherPlayer.getCoordinates().longitude;
 
             // I don't know why they decided to write the method like this...
             Location.distanceBetween(playerLatitude, playerLongitude,
@@ -243,8 +257,6 @@ public class MainActivity extends Activity {
                 Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
                 startActivity(intent);
             }
-
-
         }
     }
 }
