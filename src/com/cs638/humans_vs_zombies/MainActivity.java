@@ -7,6 +7,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.service.textservice.SpellCheckerService;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -33,6 +34,8 @@ public class MainActivity extends Activity {
     
     private String locationServiceProvider = LocationManager.GPS_PROVIDER; // Location service provider (gps or network)
     private int updatePeriod = 5; // How often user receives location updates
+
+    private SessionManager session;
 
     public enum Status {
         HUMAN,
@@ -70,9 +73,22 @@ public class MainActivity extends Activity {
 
         locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
 
-        // Create the new player
-        //  In the future, we can store this on an on-device SQLite database
-        player = new Player(Status.HUMAN); // New player is human
+        // Create player session so they don't get a new id each time they open the app
+        session = new SessionManager(getApplicationContext());
+
+        // If no session has been created, make a new one and create a new player
+        if (session.getPlayerId().get(SessionManager.KEY_ID) == 0) {
+            // Create the new player
+            player = new Player(Status.HUMAN); // New player is human
+            session.createSession(player.getId());
+        } else {
+            if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == false){
+                player = new Player(Status.HUMAN);
+            } else if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == true){
+                player = new Player(Status.ZOMBIE);
+            }
+            player.setId(session.getPlayerId().get(SessionManager.KEY_ID));
+        }
     }
 
     @Override
@@ -169,7 +185,8 @@ public class MainActivity extends Activity {
                         "Latitude: " + latitude +
                         "\nLongitude: " + longitude +
                         "\nAccuracy: " + accuracy +
-                        "\nAltitude: " + altitude;
+                        "\nAltitude: " + altitude +
+                        "\nID: " + player.getId();
                 Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
 
                 // Once location is given, we pull data from the back end, and update other player markers

@@ -71,6 +71,10 @@ public class Player {
     private int generateId(){
         Random random = new Random();
         id = random.nextInt(2147483647); //0 through max int
+
+        while (id == 0){ // Nobody gets to be 0! It is our default value for session manager.
+            id = random.nextInt(2147483647);
+        }
         return id;
     }
 }
