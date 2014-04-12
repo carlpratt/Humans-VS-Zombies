@@ -20,23 +20,29 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private Player player; // Current player
-
     // Google Map
     private GoogleMap googleMap;
 
     private LocationManager locationManager; // Updates player position on the map
 
+    private Player player; // Current player
     private Marker playerMarker; // Marker that follows the player
 
     private List<Player> otherPlayers = new ArrayList<Player>();
     private List<Marker> otherPlayerMarkers = new ArrayList<Marker>();
+    
+    private String locationServiceProvider = LocationManager.NETWORK_PROVIDER; // Location service provider (gps or network)
+    private int updatePeriod = 1; // How often user receives location updates
 
     public enum Status {
         HUMAN,
         ZOMBIE
     }
 
+    /**
+     * Creates the map and sets up LocationListener to monitor changing position
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +68,7 @@ public class MainActivity extends Activity {
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, locationListener);
+        locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
 
         // Create the new player
         //  In the future, we can store this on an on-device SQLite database
@@ -76,6 +82,11 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    /**
+     * Options menu. Right now this only allows player to switch status between human and zombie for testing
+     * @param item
+     * @return
+     */
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 
@@ -113,12 +124,16 @@ public class MainActivity extends Activity {
         initializeMap();
     }
 
+    /**
+     * Object to monitor position and provide new coordinate updates.
+     * We update the map and other parts of teh game when onLocationChanged fires.
+     */
     LocationListener locationListener = new LocationListener()
     {
         double latitude;
         double longitude;
         boolean onAppStart = true;
-        int i = 0;
+        int updateCounter = 0;
 
         public void onLocationChanged(Location location)
         {
@@ -141,14 +156,14 @@ public class MainActivity extends Activity {
 
             player.setCoordinates(myLocation);
 
-            i++;
-            if (i >= 5){ // Only show toast message and update backend every 5 calls to onLocationChanged
-                i = 0;
-                latitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLatitude();
-                longitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getLongitude();
+            updateCounter++;
+            if (updateCounter >= updatePeriod){ // Only show toast message and update backend every n calls to onLocationChanged
+                updateCounter = 0;
+                latitude = locationManager.getLastKnownLocation(locationServiceProvider).getLatitude();
+                longitude = locationManager.getLastKnownLocation(locationServiceProvider).getLongitude();
 
-                Float accuracy = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getAccuracy();
-                Double altitude = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getAltitude();
+                Float accuracy = locationManager.getLastKnownLocation(locationServiceProvider).getAccuracy();
+                Double altitude = locationManager.getLastKnownLocation(locationServiceProvider).getAltitude();
 
                 String coordinates =
                         "Latitude: " + latitude +
@@ -157,8 +172,9 @@ public class MainActivity extends Activity {
                         "\nAltitude: " + altitude;
                 Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
 
+                // Once location is given, we pull data from the back end, and update other player markers
                 // Can uncomment once backend is working
-                //updateGameData();
+                updateGameData();
 
                 removeMarkers(); // Remove all other players markers before reset
 
@@ -211,12 +227,26 @@ public class MainActivity extends Activity {
     }
 
     /**
-     * Places new markers on the map
+     * Places new markers on the map and sets the color according to status
      */
     private void placeMarkers(){
 
+        Marker marker;
+
         for (Player player : otherPlayers){
-            otherPlayerMarkers.add(googleMap.addMarker(new MarkerOptions().position(player.getCoordinates())));
+
+            marker = googleMap.addMarker(new MarkerOptions().position(player.getCoordinates()));
+
+            if (player.getStatus() == Status.HUMAN) {
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            } else if (player.getStatus() == Status.ZOMBIE){
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            } else {
+                // Should never get here...
+                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+            }
+            otherPlayerMarkers.add(marker);
+
         }
     }
 

@@ -11,11 +11,24 @@ public class Player {
     private Status status;
     private LatLng coordinates;
 
+    /**
+     * Constructor used when a new player starts playing the game.
+     * They will have no id so one will need to be generated for them.
+     * @param status
+     */
     public Player(Status status){
         id = generateId();
         this.status = status;
     }
 
+    /**
+     * Constructor used when pulling data from the back end.
+     * All data about this player will already be known.
+     * This should only be used for creating data transfer objects.
+     * @param id
+     * @param status
+     * @param coordinates
+     */
     public Player(int id, Status status, LatLng coordinates){
         this.id = id;
         this.status = status;
@@ -49,6 +62,7 @@ public class Player {
     @Override
     public String toString() {
         return "Player{" +
+                "id = " + id +
                 "status=" + status +
                 ", coordinates=" + coordinates +
                 '}';

@@ -11,13 +11,18 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Performs the http operations on our back end server.
+ * The primary function of this class is to push up the current player's status and coordinates, and
+ * to pull in the status and coordinates of all other players so MainActivity can update the map.
+ */
 public class UpdateGameData extends AsyncTask<String, String, String> {
 
     private static String url_update = "http://cryptic-spire-5519.herokuapp.com/send/";
 
-    private List<Player> players = new ArrayList<Player>();
+    private List<Player> players = new ArrayList<Player>(); // Pulled data will be parsed into this list
 
-    JSONParser jsonParser = new JSONParser();
+    JSONParser jsonParser = new JSONParser(); // Performs the http request and returns json data
 
     Player player;
     boolean zombie;
@@ -26,6 +31,8 @@ public class UpdateGameData extends AsyncTask<String, String, String> {
 
     /**
      * Constructor
+     * @param player: Current player's data to push up to the back end.
+     * @param mainActivity: Activity to send the pulled data to.
      */
     public UpdateGameData(Player player, MainActivity mainActivity){
 
@@ -60,16 +67,19 @@ public class UpdateGameData extends AsyncTask<String, String, String> {
                 player.getCoordinates().longitude;
 
         // getting JSON Object
-        JSONObject json = jsonParser.makeHttpRequest(url_update,  "POST");
+        JSONObject json = jsonParser.makeHttpRequest(url_update,  "GET");
 
         try {
 
-            JSONArray jsonPlayers = json.getJSONArray("players");
+            //check log cat for response
+            Log.d("Create Response", json.toString());
+
+            JSONArray jsonPlayers = json.getJSONArray("data");
 
             for (int i = 0; i < jsonPlayers.length(); i++){
                 JSONObject player = jsonPlayers.getJSONObject(i);
 
-                int playerId = player.getInt("id");
+                int playerId = player.getInt("userID");
                 boolean playerStatus = player.getBoolean("zombie");
                 double lat = player.getDouble("lat");
                 double lon = player.getDouble("lon");
@@ -87,9 +97,6 @@ public class UpdateGameData extends AsyncTask<String, String, String> {
                 players.add(p);
 
             }
-
-            //check log cat for response
-            Log.d("Create Response", json.toString());
         }
         catch (JSONException e){
 
