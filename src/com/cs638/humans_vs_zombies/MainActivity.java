@@ -155,6 +155,8 @@ public class MainActivity extends Activity {
         {
             LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
 
+            // Gotta do the fancy stuff like zoom animate the camera to Madison only
+            //  when the app first starts.
             if (onAppStart){
 
                 onAppStart = false;
@@ -196,6 +198,8 @@ public class MainActivity extends Activity {
                 removeMarkers(); // Remove all other players markers before reset
 
                 placeMarkers(); // Update location of player markers
+
+                //checkProximity(); // Check distance between players and initiate a zombie attack if necessary
             }
 
             // Preventing repetitive calls to onLocationChanged.
@@ -252,18 +256,22 @@ public class MainActivity extends Activity {
 
         for (Player player : otherPlayers){
 
-            marker = googleMap.addMarker(new MarkerOptions().position(player.getCoordinates()));
+            // We already add our own marker to the map. Don't want to do it twice.
+            if (player.getId() != session.getPlayerId().get(SessionManager.KEY_ID)) {
 
-            if (player.getStatus() == Status.HUMAN) {
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-            } else if (player.getStatus() == Status.ZOMBIE){
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-            } else {
-                // Should never get here...
-                marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                marker = googleMap.addMarker(new MarkerOptions().position(player.getCoordinates()));
+
+                if (player.getStatus() == Status.HUMAN) {
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                } else if (player.getStatus() == Status.ZOMBIE){
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                } else {
+                    // Should never get here...
+                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+                }
+                
+                otherPlayerMarkers.add(marker);
             }
-            otherPlayerMarkers.add(marker);
-
         }
     }
 
@@ -299,10 +307,13 @@ public class MainActivity extends Activity {
                     otherPlayerLatitude, otherPlayerLongitude, results);
 
             // If zombie is close enough (less than 5 meters) to player, start attack.
-            //  Will need to edit this to include accuracy and current player status (human or zombie)
-            if (results[0] <= 5){
+            //  Don't compare locations with ourselves! Check for our own player id.
+            if (results[0] <= 5
+                    && otherPlayer.getStatus() == Status.ZOMBIE
+                    && otherPlayer.getId() != session.getPlayerId().get(SessionManager.KEY_ID)){
                 Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
                 startActivity(intent);
+                finish();
             }
         }
     }

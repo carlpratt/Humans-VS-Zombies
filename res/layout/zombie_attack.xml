@@ -10,6 +10,17 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Zombie Attack"
-            android:id="@+id/textView" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"
-            android:layout_marginTop="108dp" android:textColor="#ff0000"/>
+            android:id="@+id/textView"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="108dp"
+            android:textColor="#ff0000"/>
+    <Button
+            android:id="@+id/btnZombieAttack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Okay!"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:onClick="onButtonClick"/>
 </RelativeLayout>
