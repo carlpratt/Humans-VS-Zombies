@@ -6,15 +6,27 @@
               android:layout_height="match_parent">
 
     <TextView
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Zombie Attack"
-            android:id="@+id/textView"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="108dp"
             android:textColor="#ff0000"/>
+
+    <TextView
+            android:id="@+id/attackOutcomeTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="New Text"
+            android:layout_below="@+id/textView"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="41dp"
+            android:textColor="#ff0000"/>
+
     <Button
             android:id="@+id/btnZombieAttack"
             android:layout_width="wrap_content"

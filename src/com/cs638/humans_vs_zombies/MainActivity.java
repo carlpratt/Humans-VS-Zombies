@@ -85,7 +85,7 @@ public class MainActivity extends Activity {
         if (session.getPlayerId().get(SessionManager.KEY_ID) == 0) {
             // Create the new player
             player = new Player(Status.HUMAN); // New player is human
-            session.createSession(player.getId());
+            session.createSession(player.getId(), false);
         } else {
             if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == false){
                 player = new Player(Status.HUMAN);
@@ -114,8 +114,10 @@ public class MainActivity extends Activity {
             case R.id.action_change_status:
                 if (player.getStatus() == Status.HUMAN){
                     player.setStatus(Status.ZOMBIE);
+                    session.updateStatus(true);
                 } else {
                     player.setStatus(Status.HUMAN);
+                    session.updateStatus(false);
                 }
                 break;
         }
@@ -140,9 +142,15 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        locationManager.removeUpdates(locationListener);
+    }
+    @Override
     protected void onResume() {
         super.onResume();
-        initializeMap();
+        //initializeMap();
+        locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
     }
 
     /**
@@ -174,7 +182,7 @@ public class MainActivity extends Activity {
                 playerMarker = googleMap.addMarker(new MarkerOptions().position(myLocation));
             }
 
-            updateMarkerColor();
+            updatePlayerData();
             playerMarker.setPosition(myLocation);
 
             player.setCoordinates(myLocation);
@@ -224,12 +232,15 @@ public class MainActivity extends Activity {
     };
 
     /**
-     * Update marker colors based on player status.
+     * Update player status and maker color
      */
-    private void updateMarkerColor(){
-        if (player.getStatus() == Status.HUMAN){
+    private void updatePlayerData(){
+
+        if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == false){
+            player.setStatus(Status.HUMAN);
             playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         } else {
+            player.setStatus(Status.ZOMBIE);
             playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
         }
     }
@@ -336,20 +347,20 @@ public class MainActivity extends Activity {
             }
         }
 
-        if (playSound){
+        // Only play sound if zombies are within 15 meters of human player
+        if (playSound && player.getStatus() == Status.HUMAN){
             playZombieSound(zombieIntensity);
         }
 
         // Start a zombie attack if other zombies are close enough
         if (playersWhoCanAttack.size() > 0){
-//            Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
-//            startActivity(intent);
-//            finish();
+            Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
+            startActivity(intent);
         }
     }
 
     /**
-     * Plays a sound based on how many zombies are by player
+     * Plays a sound based on how many zombies are nearby the player
      * @param zombieIntensity: number of zombies less than 15 meters from player
      */
     private void playZombieSound(int zombieIntensity){
@@ -364,6 +375,10 @@ public class MainActivity extends Activity {
         mPlayer.start();
     }
 
+    /**
+     * Randomly picks a sound to allow game to have a variety of audio effects
+     * @return id of the sound to be played
+     */
     private int pickRandomSound(){
         Random random = new Random();
 
