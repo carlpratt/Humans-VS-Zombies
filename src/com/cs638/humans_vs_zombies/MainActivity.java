@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.service.textservice.SpellCheckerService;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +20,7 @@ import com.google.android.gms.maps.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MainActivity extends Activity {
 
@@ -36,6 +39,8 @@ public class MainActivity extends Activity {
     private int updatePeriod = 5; // How often user receives location updates
 
     private SessionManager session;
+
+    private MediaPlayer mPlayer; // Controls sound playback
 
     public enum Status {
         HUMAN,
@@ -199,7 +204,7 @@ public class MainActivity extends Activity {
 
                 placeMarkers(); // Update location of player markers
 
-                //checkProximity(); // Check distance between players and initiate a zombie attack if necessary
+                checkProximity(); // Check distance between players and initiate a zombie attack if necessary
             }
 
             // Preventing repetitive calls to onLocationChanged.
@@ -269,7 +274,7 @@ public class MainActivity extends Activity {
                     // Should never get here...
                     marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                 }
-                
+
                 otherPlayerMarkers.add(marker);
             }
         }
@@ -286,14 +291,20 @@ public class MainActivity extends Activity {
 
     /**
      * Checks for nearby players and determines if a ZombieAttackActivity needs to happen
+     * or if sound effects need to be played
      */
     private void checkProximity(){
+
+        List<Player> playersWhoCanAttack = new ArrayList<Player>();
 
         double playerLatitude = playerMarker.getPosition().latitude;
         double playerLongitude = playerMarker.getPosition().longitude;
 
         double otherPlayerLatitude;
         double otherPlayerLongitude;
+
+        boolean playSound = false; // Play sound if zombies are close enough
+        int zombieIntensity = 0; // Number of zombies less than 15 meters from player
 
         float[] results = new float[3]; //May contain up to 3 elements if bearings are included
 
@@ -311,10 +322,55 @@ public class MainActivity extends Activity {
             if (results[0] <= 5
                     && otherPlayer.getStatus() == Status.ZOMBIE
                     && otherPlayer.getId() != session.getPlayerId().get(SessionManager.KEY_ID)){
-                Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
-                startActivity(intent);
-                finish();
+
+                playersWhoCanAttack.add(otherPlayer);
             }
+
+            // Check for longer distance and play sound
+            if (results[0] <= 15
+                    && otherPlayer.getStatus() == Status.ZOMBIE
+                    && otherPlayer.getId() != session.getPlayerId().get(SessionManager.KEY_ID)){
+
+                playSound = true;
+                zombieIntensity++;
+            }
+        }
+
+        if (playSound){
+            playZombieSound(zombieIntensity);
+        }
+
+        // Start a zombie attack if other zombies are close enough
+        if (playersWhoCanAttack.size() > 0){
+//            Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
+//            startActivity(intent);
+//            finish();
+        }
+    }
+
+    /**
+     * Plays a sound based on how many zombies are by player
+     * @param zombieIntensity: number of zombies less than 15 meters from player
+     */
+    private void playZombieSound(int zombieIntensity){
+
+        if (zombieIntensity > 1) {
+            mPlayer = MediaPlayer.create(this, R.raw.enraged_zombies);
+        } else {
+            mPlayer = MediaPlayer.create(this, pickRandomSound());
+        }
+
+        mPlayer.setLooping(false);
+        mPlayer.start();
+    }
+
+    private int pickRandomSound(){
+        Random random = new Random();
+
+        if (random.nextInt(2) == 0){
+            return R.raw.zombie_moan;
+        } else {
+            return R.raw.zombie_talking;
         }
     }
 }
