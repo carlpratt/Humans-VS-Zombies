@@ -4,11 +4,25 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent" >
 
+
     <fragment
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.MapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:layout="@layout/main"/>
+            tools:layout="@layout/main">
+
+
+    </fragment>
+
+    <Button
+            android:id="@+id/btnAttackHuman"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Attack Human!"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="82dp"
+            android:visibility="invisible"/>
 
 </RelativeLayout>

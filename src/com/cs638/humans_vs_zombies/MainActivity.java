@@ -12,6 +12,11 @@ import android.provider.MediaStore;
 import android.service.textservice.SpellCheckerService;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -151,6 +156,16 @@ public class MainActivity extends Activity {
         super.onResume();
         //initializeMap();
         locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
+    }
+
+    public void onButtonClick(View v){
+        switch (v.getId()){
+            case R.id.btnAttackHuman:
+                Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
+                startActivity(intent);
+                hideAttackHumanButton();
+                break;
+        }
     }
 
     /**
@@ -354,8 +369,7 @@ public class MainActivity extends Activity {
 
         // Start a zombie attack if other zombies are close enough
         if (playersWhoCanAttack.size() > 0){
-            Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
-            startActivity(intent);
+            displayAttackHumanButton();
         }
     }
 
@@ -387,5 +401,32 @@ public class MainActivity extends Activity {
         } else {
             return R.raw.zombie_talking;
         }
+    }
+
+    /**
+     * Puts the 'Attack Human!' button on the fragment
+     */
+    private void displayAttackHumanButton(){
+        final Animation animation = new AlphaAnimation(1, 0); // Change alpha from fully visible to invisible
+        animation.setDuration(500); // duration - half a second
+        animation.setInterpolator(new LinearInterpolator()); // do not alter animation rate
+        animation.setRepeatCount(Animation.INFINITE); // Repeat animation infinitely
+        animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
+        final Button btn = (Button) findViewById(R.id.btnAttackHuman);
+        btn.startAnimation(animation);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+                view.clearAnimation();
+            }
+        });
+    }
+
+    /**
+     * Hides the 'Attack Human!' button
+     */
+    private void hideAttackHumanButton(){
+        Button btn = (Button) findViewById(R.id.btnAttackHuman);
+        btn.setVisibility(View.GONE);
     }
 }
