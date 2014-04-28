@@ -10,7 +10,8 @@
             android:name="com.google.android.gms.maps.MapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:layout="@layout/main">
+            tools:layout="@layout/main"
+            android:layout_below="@+id/firstAidTextView">
 
 
     </fragment>
@@ -24,5 +25,42 @@
             android:layout_centerHorizontal="true"
             android:layout_marginBottom="82dp"
             android:visibility="invisible"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="INVENTORY"
+            android:id="@+id/inventoryTextView"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="WEAPONS:"
+            android:id="@+id/weaponsTextView"
+            android:layout_below="@+id/inventoryTextView"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="45dp"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FIRST AID: "
+            android:id="@+id/firstAidTextView"
+            android:layout_below="@+id/weaponsTextView"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="45dp"/>
+    <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/weaponsImageView"
+            android:layout_above="@+id/firstAidTextView"
+            android:layout_toRightOf="@id/weaponsTextView"
+            android:layout_marginLeft="10dp"/>
+    <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/firstAidImageView"
+            android:layout_above="@+id/map"
+            android:layout_toRightOf="@+id/firstAidTextView"
+            android:layout_marginLeft="10dp"/>
 
 </RelativeLayout>

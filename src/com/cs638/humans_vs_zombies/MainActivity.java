@@ -17,6 +17,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -46,6 +47,8 @@ public class MainActivity extends Activity {
     private SessionManager session;
 
     private MediaPlayer mPlayer; // Controls sound playback
+
+    private List<Integer> inventory; // Player's inventory containing weapons and first-aid
 
     public enum Status {
         HUMAN,
@@ -99,6 +102,11 @@ public class MainActivity extends Activity {
             }
             player.setId(session.getPlayerId().get(SessionManager.KEY_ID));
         }
+
+        ImageView weapons = (ImageView) findViewById(R.id.weaponsImageView);
+        ImageView firstAid = (ImageView) findViewById(R.id.firstAidImageView);
+        weapons.setImageResource(R.drawable.axe);
+        firstAid.setImageResource(R.drawable.antidote);
     }
 
     @Override
@@ -170,7 +178,7 @@ public class MainActivity extends Activity {
 
     /**
      * Object to monitor position and provide new coordinate updates.
-     * We update the map and other parts of teh game when onLocationChanged fires.
+     * We update the map and other parts of the game when onLocationChanged updates.
      */
     LocationListener locationListener = new LocationListener()
     {
