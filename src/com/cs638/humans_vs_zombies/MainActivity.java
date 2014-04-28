@@ -8,8 +8,6 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.service.textservice.SpellCheckerService;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,6 +16,7 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -49,6 +48,8 @@ public class MainActivity extends Activity {
     private MediaPlayer mPlayer; // Controls sound playback
 
     private List<Integer> inventory; // Player's inventory containing weapons and first-aid
+
+    private Player playerToBeAttacked; // Player that is going to be attacked by zombie
 
     public enum Status {
         HUMAN,
@@ -133,6 +134,16 @@ public class MainActivity extends Activity {
                     session.updateStatus(false);
                 }
                 break;
+
+            case R.id.action_change_service_provider:
+                if (locationServiceProvider == LocationManager.GPS_PROVIDER) {
+                    locationServiceProvider = LocationManager.NETWORK_PROVIDER;
+                } else {
+                    locationServiceProvider = LocationManager.GPS_PROVIDER;
+                }
+                locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+                locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
+                break;
         }
         return true;
     }
@@ -170,6 +181,7 @@ public class MainActivity extends Activity {
         switch (v.getId()){
             case R.id.btnAttackHuman:
                 Intent intent = new Intent(getApplicationContext(), ZombieAttackActivity.class);
+                intent.putExtra("playerToBeAttackedId", playerToBeAttacked.getId());
                 startActivity(intent);
                 hideAttackHumanButton();
                 break;
@@ -225,7 +237,7 @@ public class MainActivity extends Activity {
                         "\nAccuracy: " + accuracy +
                         "\nAltitude: " + altitude +
                         "\nID: " + player.getId();
-                Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
 
                 // Once location is given, we pull data from the back end, and update other player markers
                 // Can uncomment once backend is working
@@ -235,7 +247,11 @@ public class MainActivity extends Activity {
 
                 placeMarkers(); // Update location of player markers
 
-                checkProximity(); // Check distance between players and initiate a zombie attack if necessary
+                if (player.getStatus() == Status.HUMAN) {
+                    humanCheckProximity(); // Play sound effects if zombies are close enough
+                } else {
+                    zombieCheckProximity(); // Start zombie attack if necessary
+                }
             }
 
             // Preventing repetitive calls to onLocationChanged.
@@ -327,9 +343,7 @@ public class MainActivity extends Activity {
      * Checks for nearby players and determines if a ZombieAttackActivity needs to happen
      * or if sound effects need to be played
      */
-    private void checkProximity(){
-
-        List<Player> playersWhoCanAttack = new ArrayList<Player>();
+    private void humanCheckProximity(){
 
         double playerLatitude = playerMarker.getPosition().latitude;
         double playerLongitude = playerMarker.getPosition().longitude;
@@ -351,15 +365,6 @@ public class MainActivity extends Activity {
             Location.distanceBetween(playerLatitude, playerLongitude,
                     otherPlayerLatitude, otherPlayerLongitude, results);
 
-            // If zombie is close enough (less than 5 meters) to player, start attack.
-            //  Don't compare locations with ourselves! Check for our own player id.
-            if (results[0] <= 5
-                    && otherPlayer.getStatus() == Status.ZOMBIE
-                    && otherPlayer.getId() != session.getPlayerId().get(SessionManager.KEY_ID)){
-
-                playersWhoCanAttack.add(otherPlayer);
-            }
-
             // Check for longer distance and play sound
             if (results[0] <= 15
                     && otherPlayer.getStatus() == Status.ZOMBIE
@@ -374,10 +379,51 @@ public class MainActivity extends Activity {
         if (playSound && player.getStatus() == Status.HUMAN){
             playZombieSound(zombieIntensity);
         }
+    }
 
-        // Start a zombie attack if other zombies are close enough
-        if (playersWhoCanAttack.size() > 0){
+    /**
+     * Checks for nearby human players and initiates an attack if they are close enough
+     */
+    private void zombieCheckProximity(){
+
+        List<Player> humanPlayersNearby = new ArrayList<Player>();
+
+        double playerLatitude = playerMarker.getPosition().latitude;
+        double playerLongitude = playerMarker.getPosition().longitude;
+
+        double otherPlayerLatitude;
+        double otherPlayerLongitude;
+
+        float[] results = new float[3]; //May contain up to 3 elements if bearings are included
+
+        for (Player otherPlayer : otherPlayers) {
+
+            otherPlayerLatitude = otherPlayer.getCoordinates().latitude;
+            otherPlayerLongitude = otherPlayer.getCoordinates().longitude;
+
+            // I don't know why they decided to write the method like this...
+            Location.distanceBetween(playerLatitude, playerLongitude,
+                    otherPlayerLatitude, otherPlayerLongitude, results);
+
+            // If human is close enough (less than 5 meters) to player, start attack.
+            //  Don't compare locations with ourselves! Check for our own player id.
+            if (results[0] <= 100
+                    && otherPlayer.getStatus() == Status.HUMAN
+                    && otherPlayer.getId() != session.getPlayerId().get(SessionManager.KEY_ID)){
+
+                humanPlayersNearby.add(otherPlayer);
+            }
+        }
+
+        // Display button to start zombie attack if human(s) are close enough
+        if (humanPlayersNearby.size() > 0){
             displayAttackHumanButton();
+
+            // Randomly select a player to attack from the list
+            Random rand = new Random();
+            playerToBeAttacked = humanPlayersNearby.get(rand.nextInt(humanPlayersNearby.size()));
+        } else {
+            hideAttackHumanButton();
         }
     }
 
@@ -422,12 +468,6 @@ public class MainActivity extends Activity {
         animation.setRepeatMode(Animation.REVERSE); // Reverse animation at the end so the button will fade back in
         final Button btn = (Button) findViewById(R.id.btnAttackHuman);
         btn.startAnimation(animation);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View view) {
-                view.clearAnimation();
-            }
-        });
     }
 
     /**

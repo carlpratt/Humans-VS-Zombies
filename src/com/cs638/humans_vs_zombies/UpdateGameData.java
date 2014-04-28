@@ -2,6 +2,7 @@ package com.cs638.humans_vs_zombies;
 
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 import com.google.android.gms.maps.model.LatLng;
 import org.apache.http.NameValuePair;
 import org.json.JSONArray;
@@ -64,7 +65,8 @@ public class UpdateGameData extends AsyncTask<Player, String, String> {
         url_update += player.getId() + ":" +
                 zombie + ":" +
                 playerArgs.getCoordinates().latitude + ":" +
-                playerArgs.getCoordinates().longitude;
+                playerArgs.getCoordinates().longitude + ":" +
+                "1000"; // return everything within a 1000 km radius for now...
 
         // getting JSON Object
         JSONObject json = jsonParser.makeHttpRequest(url_update,  "GET");
@@ -99,6 +101,8 @@ public class UpdateGameData extends AsyncTask<Player, String, String> {
             }
         }
         catch (JSONException e){
+
+        } catch (NullPointerException e){
 
         }
 
