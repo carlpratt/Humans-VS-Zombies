@@ -16,7 +16,6 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -40,7 +39,7 @@ public class MainActivity extends Activity {
     private List<Player> otherPlayers = new ArrayList<Player>();
     private List<Marker> otherPlayerMarkers = new ArrayList<Marker>();
     
-    private String locationServiceProvider = LocationManager.GPS_PROVIDER; // Location service provider (gps or network)
+    private String locationServiceProvider = LocationManager.NETWORK_PROVIDER; // Location service provider (gps or network)
     private int updatePeriod = 5; // How often user receives location updates
 
     private SessionManager session;
@@ -50,6 +49,8 @@ public class MainActivity extends Activity {
     private List<Integer> inventory; // Player's inventory containing weapons and first-aid
 
     private Player playerToBeAttacked; // Player that is going to be attacked by zombie
+
+    private boolean showDevInfo = false; // Lists info like current coordinates and player id
 
     public enum Status {
         HUMAN,
@@ -88,6 +89,10 @@ public class MainActivity extends Activity {
 
         if (intent.hasExtra("locationServiceProvider")){
             locationServiceProvider = intent.getStringExtra("locationServiceProvider");
+        }
+
+        if (locationServiceProvider == LocationManager.NETWORK_PROVIDER){
+            updatePeriod = 1; // Network doesn't update location as often as gps
         }
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -153,6 +158,14 @@ public class MainActivity extends Activity {
                 newServiceProviderIntent.putExtra("locationServiceProvider", locationServiceProvider);
                 newServiceProviderIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(newServiceProviderIntent);
+                break;
+
+            case R.id.action_show_developer_info:
+                showDevInfo = true;
+                break;
+
+            case R.id.action_hide_developer_info:
+                showDevInfo = false;
                 break;
         }
         return true;
@@ -224,7 +237,8 @@ public class MainActivity extends Activity {
                 // Zoom in, animating the camera.
                 googleMap.animateCamera(CameraUpdateFactory.zoomTo(19), 2000, null);
 
-                playerMarker = googleMap.addMarker(new MarkerOptions().position(myLocation));
+                playerMarker = googleMap.addMarker(new MarkerOptions().position(myLocation)
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.zombie)));
             }
 
             updatePlayerData();
@@ -241,16 +255,17 @@ public class MainActivity extends Activity {
                 Float accuracy = locationManager.getLastKnownLocation(locationServiceProvider).getAccuracy();
                 Double altitude = locationManager.getLastKnownLocation(locationServiceProvider).getAltitude();
 
-                String coordinates =
-                        "Latitude: " + latitude +
-                        "\nLongitude: " + longitude +
-                        "\nAccuracy: " + accuracy +
-                        "\nAltitude: " + altitude +
-                        "\nID: " + player.getId();
-                //Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
+                if (showDevInfo == true) {
+                    String coordinates =
+                            "Latitude: " + latitude +
+                                    "\nLongitude: " + longitude +
+                                    "\nAccuracy: " + accuracy +
+                                    "\nAltitude: " + altitude +
+                                    "\nID: " + player.getId();
+                    Toast.makeText(getApplicationContext(), coordinates, Toast.LENGTH_LONG).show();
+                }
 
                 // Once location is given, we pull data from the back end, and update other player markers
-                // Can uncomment once backend is working
                 updateGameData();
 
                 removeMarkers(); // Remove all other players markers before reset
@@ -287,10 +302,10 @@ public class MainActivity extends Activity {
 
         if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == false){
             player.setStatus(Status.HUMAN);
-            playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+            playerMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.player));
         } else {
             player.setStatus(Status.ZOMBIE);
-            playerMarker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            playerMarker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.zombie));
         }
     }
 
@@ -327,9 +342,9 @@ public class MainActivity extends Activity {
                 marker = googleMap.addMarker(new MarkerOptions().position(player.getCoordinates()));
 
                 if (player.getStatus() == Status.HUMAN) {
-                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.player));
                 } else if (player.getStatus() == Status.ZOMBIE){
-                    marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                    marker.setIcon(BitmapDescriptorFactory.fromResource(R.drawable.zombie));
                 } else {
                     // Should never get here...
                     marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));

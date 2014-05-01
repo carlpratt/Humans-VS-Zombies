@@ -13,4 +13,14 @@
         android:showAsAction="never"
         android:title="Switch Providers"/>
 
+    <item
+        android:id="@+id/action_show_developer_info"
+        android:showAsAction="never"
+        android:title="Show Dev Info"/>
+
+    <item
+        android:id="@+id/action_hide_developer_info"
+        android:showAsAction="never"
+        android:title="Hide Dev Info"/>
+
 </menu>
