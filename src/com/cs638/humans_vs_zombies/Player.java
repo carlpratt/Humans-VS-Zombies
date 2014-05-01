@@ -10,6 +10,7 @@ public class Player {
     private int id;
     private Status status;
     private LatLng coordinates;
+    private boolean infected;
 
     /**
      * Constructor used when a new player starts playing the game.
@@ -29,10 +30,11 @@ public class Player {
      * @param status
      * @param coordinates
      */
-    public Player(int id, Status status, LatLng coordinates){
+    public Player(int id, Status status, LatLng coordinates, boolean infected){
         this.id = id;
         this.status = status;
         this.coordinates = coordinates;
+        this.infected = infected;
     }
 
     public int getId(){
@@ -58,6 +60,10 @@ public class Player {
     public void setCoordinates(LatLng coordinates) {
         this.coordinates = coordinates;
     }
+
+    public boolean getInfected() { return infected; }
+
+    public void setInfected(boolean infected) { this.infected = infected; }
 
     @Override
     public String toString() {

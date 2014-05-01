@@ -16,6 +16,7 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -52,10 +53,9 @@ public class MainActivity extends Activity {
 
     private boolean showDevInfo = false; // Lists info like current coordinates and player id
 
-    public enum Status {
-        HUMAN,
-        ZOMBIE
-    }
+    private TextView infectedTextView; // Text view to display infected status
+
+    public enum Status { HUMAN, ZOMBIE }
 
     /**
      * Creates the map and sets up LocationListener to monitor changing position
@@ -121,6 +121,8 @@ public class MainActivity extends Activity {
         ImageView firstAid = (ImageView) findViewById(R.id.firstAidImageView);
         weapons.setImageResource(R.drawable.axe);
         firstAid.setImageResource(R.drawable.antidote);
+
+        infectedTextView = (TextView) findViewById(R.id.infectedTextView);
     }
 
     @Override
@@ -162,10 +164,12 @@ public class MainActivity extends Activity {
 
             case R.id.action_show_developer_info:
                 showDevInfo = true;
+                Toast.makeText(this, "Dev info ON", Toast.LENGTH_LONG).show();
                 break;
 
             case R.id.action_hide_developer_info:
                 showDevInfo = false;
+                Toast.makeText(this, "Dev info OFF", Toast.LENGTH_LONG).show();
                 break;
         }
         return true;
@@ -276,6 +280,13 @@ public class MainActivity extends Activity {
                     humanCheckProximity(); // Play sound effects if zombies are close enough
                 } else {
                     zombieCheckProximity(); // Start zombie attack if necessary
+                }
+
+                // If player is infected then show infected warning
+                if (player.getInfected() == true){
+                    infectedTextView.setVisibility(View.VISIBLE);
+                } else {
+                    infectedTextView.setVisibility(View.INVISIBLE);
                 }
             }
 

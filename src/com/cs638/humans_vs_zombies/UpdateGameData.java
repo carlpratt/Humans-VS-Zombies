@@ -85,13 +85,14 @@ public class UpdateGameData extends AsyncTask<Player, String, String> {
                 boolean playerZombieStatus = player.getBoolean("zombie");
                 double lat = player.getDouble("lat");
                 double lon = player.getDouble("lon");
+                boolean infected = player.getBoolean("infected");
 
                 LatLng playerCoordinates = new LatLng(lat, lon);
                 Player p;
                 if (playerZombieStatus == true) {
-                    p = new Player(playerId, MainActivity.Status.ZOMBIE, playerCoordinates);
+                    p = new Player(playerId, MainActivity.Status.ZOMBIE, playerCoordinates, infected);
                 } else if (playerZombieStatus == false){
-                    p = new Player(playerId, MainActivity.Status.HUMAN, playerCoordinates);
+                    p = new Player(playerId, MainActivity.Status.HUMAN, playerCoordinates, infected);
                 } else {
                     p = new Player(MainActivity.Status.HUMAN); // Shouldn't ever get here...
                 }

@@ -26,6 +26,7 @@ public class SessionManager {
     // User keys (make variables public to access from outside)
     public static final String KEY_ID = "id";
     public static final String KEY_STATUS = "status";
+    public static final String KEY_INFECTED = "infected";
 
     // Constructor
     public SessionManager(Context context){
@@ -48,8 +49,21 @@ public class SessionManager {
         editor.commit();
     }
 
+    /**
+     * Saves the player's status as either human (false) or zombie (true)
+     * @param status
+     */
     public void updateStatus(boolean status){
         editor.putBoolean(KEY_STATUS, status);
+        editor.commit();
+    }
+
+    /**
+     * Saves the player's infected status as either true or false
+     * @param infected
+     */
+    public void updateInfected (boolean infected) {
+        editor.putBoolean(KEY_INFECTED, infected);
         editor.commit();
     }
 
@@ -75,6 +89,15 @@ public class SessionManager {
 
         // return status
         return status;
+    }
+
+    /**
+     * Get infection status of player
+     */
+    public HashMap<String, Boolean> getPlayerInfected(){
+        HashMap<String, Boolean> infected = new HashMap<String, Boolean>();
+        infected.put(KEY_INFECTED, preferences.getBoolean(KEY_INFECTED, false));
+        return infected;
     }
 
     /**

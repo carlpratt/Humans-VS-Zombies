@@ -54,9 +54,9 @@ public class ZombieAttackActivity extends Activity {
             if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == false) { // If player is human and loses
                 battleOutcomeTextView.setText("You were infected!");
                 battleOutcomeTextView.setTextColor(Color.RED);
-                session.updateStatus(true); // Player is now a zombie
+                session.updateInfected(true); // Player is now infected
                 new SendInfectedStatus().execute(); // Send id of infected player to server
-            } else { // If player is human and loses
+            } else { // If player is human and wins
                 battleOutcomeTextView.setText("You were NOT infected!");
                 battleOutcomeTextView.setTextColor(Color.GREEN);
             }
@@ -64,7 +64,7 @@ public class ZombieAttackActivity extends Activity {
             if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == true) { // If player is zombie and wins
                 battleOutcomeTextView.setText("You infected a player!");
                 battleOutcomeTextView.setTextColor(Color.GREEN);
-                session.updateStatus(true); // Player is now a zombie
+                session.updateInfected(true); // Player is now infected
                 new SendInfectedStatus().execute(); // Send id of infected player to server
             } else { // If player is zombie and loses
                 battleOutcomeTextView.setText("You did NOT infect the player!");
