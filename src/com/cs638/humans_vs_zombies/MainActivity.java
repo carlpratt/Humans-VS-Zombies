@@ -83,7 +83,15 @@ public class MainActivity extends Activity {
 
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
+        // Check which location provider (gps or network) we should be using
+        Intent intent = getIntent();
+
+        if (intent.hasExtra("locationServiceProvider")){
+            locationServiceProvider = intent.getStringExtra("locationServiceProvider");
+        }
+
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+        Toast.makeText(this, "Service Provider: " + locationServiceProvider, Toast.LENGTH_LONG).show(); // For debug
 
         locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
 
@@ -141,8 +149,10 @@ public class MainActivity extends Activity {
                 } else {
                     locationServiceProvider = LocationManager.GPS_PROVIDER;
                 }
-                locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
-                locationManager.requestLocationUpdates(locationServiceProvider, 0, 0, locationListener);
+                Intent newServiceProviderIntent = new Intent(getApplicationContext(), MainActivity.class);
+                newServiceProviderIntent.putExtra("locationServiceProvider", locationServiceProvider);
+                newServiceProviderIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(newServiceProviderIntent);
                 break;
         }
         return true;
