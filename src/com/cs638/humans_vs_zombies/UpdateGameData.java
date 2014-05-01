@@ -98,7 +98,6 @@ public class UpdateGameData extends AsyncTask<Player, String, String> {
                 }
 
                 players.add(p);
-
             }
         }
         catch (JSONException e){

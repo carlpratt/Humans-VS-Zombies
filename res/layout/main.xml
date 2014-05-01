@@ -12,7 +12,7 @@
             android:layout_height="match_parent"
             tools:layout="@layout/main"
             android:layout_below="@+id/firstAidTextView"
-            android:layout_alignParentBottom="true">
+            android:layout_alignBottom="@+id/btnAttackHuman">
     </fragment>
 
     <Button
@@ -71,5 +71,63 @@
             android:textColor="#ff0000"
             android:textSize="30sp"
             android:visibility="invisible"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Latitude: "
+            android:id="@+id/latitudeTextView"
+            android:layout_below="@+id/map"
+            android:layout_alignParentStart="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Longitude: "
+            android:id="@+id/longitudeTextView"
+            android:layout_below="@+id/latitudeTextView"
+            android:layout_alignParentStart="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accuracy: "
+            android:id="@+id/accuracyTextView"
+            android:layout_below="@+id/longitudeTextView"
+            android:layout_alignParentStart="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ID: "
+            android:id="@+id/playerIdTextView"
+            android:layout_below="@+id/accuracyTextView"
+            android:layout_alignParentStart="true"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading Latitude..."
+            android:id="@+id/actualLatitudeTextView"
+            android:layout_above="@+id/longitudeTextView"
+            android:layout_toRightOf="@+id/latitudeTextView"
+            android:layout_below="@+id/map"
+            android:layout_alignEnd="@+id/btnAttackHuman"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading Longitude..."
+            android:id="@+id/actualLongitudeTextView"
+            android:layout_alignTop="@+id/longitudeTextView"
+            android:layout_toRightOf="@+id/longitudeTextView"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading Accuracy..."
+            android:id="@+id/actualAccuracyTextView"
+            android:layout_alignTop="@+id/accuracyTextView"
+            android:layout_toRightOf="@+id/accuracyTextView"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading Player ID..."
+            android:id="@+id/actualPlayerIdTextView"
+            android:layout_alignTop="@+id/playerIdTextView"
+            android:layout_toRightOf="@+id/playerIdTextView"/>
 
 </RelativeLayout>

@@ -22,6 +22,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.*;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,11 @@ public class MainActivity extends Activity {
     private boolean showDevInfo = false; // Lists info like current coordinates and player id
 
     private TextView infectedTextView; // Text view to display infected status
+
+    private TextView latitudeTextView; // Text view to display latitude
+    private TextView longitudeTextView;
+    private TextView accuracyTextView;
+    private TextView playerIdTextView;
 
     public enum Status { HUMAN, ZOMBIE }
 
@@ -123,6 +129,11 @@ public class MainActivity extends Activity {
         firstAid.setImageResource(R.drawable.antidote);
 
         infectedTextView = (TextView) findViewById(R.id.infectedTextView);
+
+        latitudeTextView = (TextView) findViewById(R.id.actualLatitudeTextView);
+        longitudeTextView = (TextView) findViewById(R.id.actualLongitudeTextView);
+        accuracyTextView = (TextView) findViewById(R.id.actualAccuracyTextView);
+        playerIdTextView = (TextView) findViewById(R.id.actualPlayerIdTextView);
     }
 
     @Override
@@ -288,6 +299,11 @@ public class MainActivity extends Activity {
                 } else {
                     infectedTextView.setVisibility(View.INVISIBLE);
                 }
+
+                latitudeTextView.setText(Double.toString(latitude));
+                longitudeTextView.setText(Double.toString(longitude));
+                accuracyTextView.setText(Float.toString(accuracy));
+                playerIdTextView.setText(Integer.toString(player.getId()));
             }
 
             // Preventing repetitive calls to onLocationChanged.
