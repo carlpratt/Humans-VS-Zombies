@@ -469,11 +469,17 @@ public class MainActivity extends Activity {
 
         // Display button to start zombie attack if human(s) are close enough
         if (humanPlayersNearby.size() > 0){
-            displayAttackHumanButton();
 
             // Randomly select a player to attack from the list
             Random rand = new Random();
             playerToBeAttacked = humanPlayersNearby.get(rand.nextInt(humanPlayersNearby.size()));
+
+            // Only attack non-infected players. Maybe change later
+            if (playerToBeAttacked.getInfected() == false) {
+                displayAttackHumanButton();
+            } else {
+                hideAttackHumanButton();
+            }
         } else {
             hideAttackHumanButton();
         }

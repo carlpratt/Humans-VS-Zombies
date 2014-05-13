@@ -50,26 +50,15 @@ public class ZombieAttackActivity extends Activity {
         Random rand = new Random();
         battleOutcomeTextView = (TextView) findViewById(R.id.attackOutcomeTextView);
 
+        // Right now we will only handle the case if a zombie is attacking a human
         if (rand.nextBoolean() == true){ // If attack is successful
-            if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == false) { // If player is human and loses
-                battleOutcomeTextView.setText("You were infected!");
-                battleOutcomeTextView.setTextColor(Color.RED);
-                session.updateInfected(true); // Player is now infected
-                new SendInfectedStatus().execute(); // Send id of infected player to server
-            } else { // If player is human and wins
-                battleOutcomeTextView.setText("You were NOT infected!");
-                battleOutcomeTextView.setTextColor(Color.GREEN);
-            }
+            battleOutcomeTextView.setText("You infected a player!");
+            battleOutcomeTextView.setTextColor(Color.GREEN);
+            session.updateInfected(true); // Player is now infected
+            new SendInfectedStatus().execute(); // Send id of infected player to server
         } else { // If attack fails
-            if (session.getPlayerStatus().get(SessionManager.KEY_STATUS) == true) { // If player is zombie and wins
-                battleOutcomeTextView.setText("You infected a player!");
-                battleOutcomeTextView.setTextColor(Color.GREEN);
-                session.updateInfected(true); // Player is now infected
-                new SendInfectedStatus().execute(); // Send id of infected player to server
-            } else { // If player is zombie and loses
-                battleOutcomeTextView.setText("You did NOT infect the player!");
-                battleOutcomeTextView.setTextColor(Color.RED);
-            }
+            battleOutcomeTextView.setText("You did NOT infect the player!");
+            battleOutcomeTextView.setTextColor(Color.RED);
         }
     }
 
